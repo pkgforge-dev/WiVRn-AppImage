@@ -10,6 +10,7 @@ pacman -Syu --noconfirm \
 	avahi               \
 	boost               \
 	clang               \
+	cli11               \
 	cmake               \
 	eigen               \
 	extra-cmake-modules \
@@ -22,6 +23,7 @@ pacman -Syu --noconfirm \
 	libarchive          \
 	libbsd              \
 	libnotify           \
+	librsvg             \
 	ninja               \
 	nlohmann-json       \
 	pipewire            \
