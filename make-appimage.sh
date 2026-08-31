@@ -12,6 +12,7 @@ export DESKTOP=/usr/share/applications/io.github.wivrn.wivrn.desktop
 export DEPLOY_OPENGL=1
 export DEPLOY_VULKAN=1
 export DEPLOY_PIPEWIRE=1
+export APPNAME=WiVRn
 
 # Deploy dependencies
 quick-sharun /usr/bin/wivrn* /usr/lib/wivrn /usr/lib/xrizer /usr/share/openxr
