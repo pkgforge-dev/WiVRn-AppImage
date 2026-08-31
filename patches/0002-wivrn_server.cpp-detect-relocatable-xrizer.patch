@@ -1,0 +1,15 @@
+# Support relocatable installs (AppImage): list the xrizer shipped in
+# ../lib/xrizer in the dashboard.
+--- a/dashboard/wivrn_server.cpp
++++ b/dashboard/wivrn_server.cpp
+@@ -567,6 +567,10 @@
+ 		};
+ 
+ 	QList<openVRCompatLib> result;
++	// relocatable installs: check relative to the executable
++	auto exe = std::filesystem::read_symlink("/proc/self/exe");
++	if (std::filesystem::exists((exe.parent_path() / ".." / "lib" / "xrizer").lexically_normal()))
++		result.push_back(openVRCompatLib(i18n("xrizer"), "lib/xrizer"));
+ 	for (auto path: std::ranges::split_view(std::string_view(OVR_COMPAT_SEARCH_PATH), std::string_view(":")))
+ 	{
+ 		if (std::filesystem::path fs = std::string_view(path); std::filesystem::exists(fs))

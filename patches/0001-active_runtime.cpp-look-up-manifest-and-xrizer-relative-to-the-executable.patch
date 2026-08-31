@@ -1,0 +1,45 @@
+# Support relocatable installs (AppImage): look up the OpenXR runtime
+# manifest relative to the executable, and look for the bundled xrizer in
+# ../lib/xrizer.
+--- a/server/active_runtime.cpp
++++ b/server/active_runtime.cpp
+@@ -57,6 +57,11 @@
+ 	if (std::filesystem::exists(dev_manifest))
+ 		return {dev_manifest};
+ 
++	// Check relative to the executable, for relocatable installs
++	auto relative_location = (exe.parent_path() / ".." / location).lexically_normal();
++	if (std::filesystem::exists(relative_location))
++		return filter_files(relative_location, prefix);
++
+ 	// Assume we are installed
+ 	return filter_files(WIVRN_INSTALL_PREFIX / location, prefix);
+ }
+@@ -72,6 +77,12 @@
+ 		                if (flatpak_root)
+ 			                return *flatpak_root / "xrizer";
+ 
++		                // relocatable installs: check relative to the executable
++		                auto exe = std::filesystem::read_symlink("/proc/self/exe");
++		                auto relative_compat = (exe.parent_path() / ".." / "lib" / "xrizer").lexically_normal();
++		                if (std::filesystem::exists(relative_compat))
++			                return relative_compat;
++
+ 		                for (auto path: std::ranges::split_view(std::string_view(OVR_COMPAT_SEARCH_PATH), std::string_view(":")))
+ 		                {
+ 			                if (std::filesystem::path res = std::string_view(path); std::filesystem::exists(res))
+@@ -82,7 +93,13 @@
+ 	                [](const std::string & path) {
+ 		                // exlicit value, use it
+ 		                std::optional<std::filesystem::path> flatpak_root = flatpak_key(flatpak::section::instance, "app-path");
+-		                return flatpak_root.value_or("") / path;
++		                if (flatpak_root)
++			                return *flatpak_root / path;
++		                if (path.starts_with('/'))
++			                return std::filesystem::path(path);
++		                // relative values are resolved against the install prefix
++		                auto exe = std::filesystem::read_symlink("/proc/self/exe");
++		                return (exe.parent_path() / ".." / path).lexically_normal();
+ 	                },
+ 	                [](std::nullptr_t) {
+ 		                // explicit null, don't set any compat path
